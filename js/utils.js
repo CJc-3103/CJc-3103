@@ -6,17 +6,11 @@ export function transOptionsMap(optionsMap) {
   }
   return newOptionsMap;
 }
-
-export function compare(a, b) {
-  return a === b;
-}
+5;
 
 // 根据值返回映射中对应的键，参数是将要匹配的值和原映射对象
 export function findKeyByValFromMap(value, map) {
-  console.log(map);
-  let result = Object.keys(map).find((k) => compare(map[k], value));
-  console.log(result);
-  return result;
+  return Object.keys(map).find((k) => map[k] === value);
 }
 // 在一对多键值对映射中，根据值返回对应的键
 export function findKeyByValFromMultiMap(value, map) {

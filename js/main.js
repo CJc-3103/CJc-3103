@@ -4,7 +4,7 @@ import Cubic from './cubic/Cubic.js';
   //   console.log(module);
   console.log('游戏开始');
   // 生成魔方
-  const cubic = new Cubic();
+  const cubic = new Cubic('.cubic', '.block');
   function getRotateDirection(e) {
     return e.target.innerText;
   }

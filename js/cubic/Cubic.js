@@ -4,11 +4,9 @@ import {
   ROTATE_DIRECTIONS,
   AXES_TO_LAYERS,
   BLOCKS_PARAMS,
-  calLayerFromDirection,
-} from './modules/index.js';
-// } from './modules/setupCubic.js';
+} from './setup/index.js';
 import { createAllBlocks } from './block/index.js';
-// import { createAllBlocks } from './block/createBlock.js';
+import { calLayerFromDirection } from './utils/index.js';
 import { setTransition, findKeyByValFromMultiMap } from '../utils.js';
 
 export default class Cubic {
@@ -37,195 +35,15 @@ export default class Cubic {
   }
   //#endregion
 
-  constructor() {
+  constructor(cubicClassName, blockClassName) {
     console.log('创建魔方');
-    this.initCubic();
+    this.initCubic(cubicClassName, blockClassName);
   }
 
   //#region 方法
-  initCubic() {
-    //#region 获取魔方和块的视图元素
-    this.element = document.querySelector('.cubic');
-    //#region
-    // const blockFLU = document.querySelector('.block_angle--flu'),
-    //   blockFUR = document.querySelector('.block_angle--fur'),
-    //   blockFRD = document.querySelector('.block_angle--frd'),
-    //   blockFDL = document.querySelector('.block_angle--fdl'),
-    //   blockBUL = document.querySelector('.block_angle--bul'),
-    //   blockBRU = document.querySelector('.block_angle--bru'),
-    //   blockBDR = document.querySelector('.block_angle--bdr'),
-    //   blockBLD = document.querySelector('.block_angle--bld');
-    //#endregion
-    //#endregion
-    //#region 解构全局变量
-    // 结构块的位置
-    // const {
-    //   POSITION_ANGLE_FLU,
-    //   POSITION_ANGLE_FUR,
-    //   POSITION_ANGLE_FRD,
-    //   POSITION_ANGLE_FDL,
-    //   POSITION_ANGLE_BUL,
-    //   POSITION_ANGLE_BRU,
-    //   POSITION_ANGLE_BDR,
-    //   POSITION_ANGLE_BLD,
-    // } = BLOCK_POSITION;
-    // // 结构旋转方向
-    // const {
-    //   LAYER_U,
-    //   LAYER_R,
-    //   LAYER_D,
-    //   LAYER_L,
-    //   LAYER_F,
-    //   LAYER_B,
-    //   LAYER_U_REVER,
-    //   LAYER_R_REVER,
-    //   LAYER_D_REVER,
-    //   LAYER_L_REVER,
-    //   LAYER_F_REVER,
-    //   LAYER_B_REVER,
-    // } = ROTATE_DIRECTIONS;
-    //#endregion
-    //#region 生成魔方的块
-
-    //#region
-    // this.blockList = [
-    //   new Block(
-    //     blockFLU,
-    //     new BlockPosition(POSITION_ANGLE_FLU, [
-    //       [BlockPosition, [LAYER_F, LAYER_U_REVER]],
-    //       [BlockPosition, [LAYER_L, LAYER_F_REVER]],
-    //       [BlockPosition, [LAYER_U, LAYER_L_REVER]],
-    //     ])
-    //   ),
-    //   new Block(
-    //     blockFUR,
-    //     new BlockPosition(POSITION_ANGLE_FUR, [
-    //       [BlockPosition, [LAYER_U, LAYER_F_REVER]],
-    //       [BlockPosition, [LAYER_F, LAYER_R_REVER]],
-    //       [BlockPosition, [LAYER_R, LAYER_U_REVER]],
-    //     ])
-    //   ),
-    //   new Block(
-    //     blockFRD,
-    //     new BlockPosition(POSITION_ANGLE_FRD, [
-    //       [BlockPosition, [LAYER_R, LAYER_F_REVER]],
-    //       [BlockPosition, [LAYER_F, LAYER_D_REVER]],
-    //       [BlockPosition, [LAYER_D, LAYER_R_REVER]],
-    //     ])
-    //   ),
-    //   new Block(
-    //     blockFDL,
-    //     new BlockPosition(POSITION_ANGLE_FDL, [
-    //       [BlockPosition, [LAYER_F, LAYER_L_REVER]],
-    //       [BlockPosition, [LAYER_D, LAYER_F_REVER]],
-    //       [BlockPosition, [LAYER_L, LAYER_D_REVER]],
-    //     ])
-    //   ),
-    //   new Block(
-    //     blockBUL,
-    //     new BlockPosition(POSITION_ANGLE_BUL, [
-    //       [BlockPosition, [LAYER_L, LAYER_U_REVER]],
-    //       [BlockPosition, [LAYER_U, LAYER_B_REVER]],
-    //       [BlockPosition, [LAYER_B, LAYER_L_REVER]],
-    //     ])
-    //   ),
-    //   new Block(
-    //     blockBRU,
-    //     new BlockPosition(POSITION_ANGLE_BRU, [
-    //       [AnglePositionFUR, [LAYER_U, LAYER_R_REVER]],
-    //       [AnglePositionBUL, [LAYER_B, LAYER_U_REVER]],
-    //       [AnglePositionBDR, [LAYER_R, LAYER_B_REVER]],
-    //     ])
-    //   ),
-    //   new Block(
-    //     blockBDR,
-    //     new BlockPosition(POSITION_ANGLE_BDR, [
-    //       [AnglePositionFUR, [LAYER_R, LAYER_D_REVER]],
-    //       [AnglePositionBUL, [LAYER_B, LAYER_R_REVER]],
-    //       [AnglePositionBDR, [LAYER_D, LAYER_B_REVER]],
-    //     ])
-    //   ),
-    //   new Block(
-    //     blockBLD,
-    //     new BlockPosition(POSITION_ANGLE_BLD, [
-    //       [AnglePositionFUR, [LAYER_D, LAYER_L_REVER]],
-    //       [AnglePositionBUL, [LAYER_L, LAYER_B_REVER]],
-    //       [AnglePositionBDR, [LAYER_B, LAYER_D_REVER]],
-    //     ])
-    //   ),
-    // ];
-    //#endregion
-    //#region
-    // this.blockList = [
-    //   new Block(
-    //     blockFLU,
-    //     new BlockPosition(POSITION_ANGLE_FLU, [
-    //       [POSITION_ANGLE_FUR, [LAYER_F, LAYER_U_REVER]],
-    //       [POSITION_ANGLE_FDL, [LAYER_L, LAYER_F_REVER]],
-    //       [POSITION_ANGLE_BUL, [LAYER_U, LAYER_L_REVER]],
-    //     ])
-    //   ),
-    //   //   new Block(
-    //   //     blockFUR,
-    //   //     new BlockPosition(POSITION_ANGLE_FUR, [
-    //   //       [POSITION_ANGLE_FLU, [LAYER_U, LAYER_F_REVER]],
-    //   //       [POSITION_ANGLE_FRD, [LAYER_F, LAYER_R_REVER]],
-    //   //       [POSITION_ANGLE_BRU, [LAYER_R, LAYER_U_REVER]],
-    //   //     ])
-    //   //   ),
-    //   //   new Block(
-    //   //     blockFRD,
-    //   //     new BlockPosition(POSITION_ANGLE_FRD, [
-    //   //       [POSITION_ANGLE_FUR, [LAYER_R, LAYER_F_REVER]],
-    //   //       [POSITION_ANGLE_FDL, [LAYER_F, LAYER_D_REVER]],
-    //   //       [POSITION_ANGLE_BDR, [LAYER_D, LAYER_R_REVER]],
-    //   //     ])
-    //   //   ),
-    //   //   new Block(
-    //   //     blockFDL,
-    //   //     new BlockPosition(POSITION_ANGLE_FDL, [
-    //   //       [POSITION_ANGLE_FLU, [LAYER_F, LAYER_L_REVER]],
-    //   //       [POSITION_ANGLE_FRD, [LAYER_D, LAYER_F_REVER]],
-    //   //       [POSITION_ANGLE_BLD, [LAYER_L, LAYER_D_REVER]],
-    //   //     ])
-    //   //   ),
-    //   //   new Block(
-    //   //     blockBUL,
-    //   //     new BlockPosition(POSITION_ANGLE_BUL, [
-    //   //       [POSITION_ANGLE_FLU, [LAYER_L, LAYER_U_REVER]],
-    //   //       [POSITION_ANGLE_BRU, [LAYER_U, LAYER_B_REVER]],
-    //   //       [POSITION_ANGLE_BLD, [LAYER_B, LAYER_L_REVER]],
-    //   //     ])
-    //   //   ),
-    //   //   new Block(
-    //   //     blockBRU,
-    //   //     new BlockPosition(POSITION_ANGLE_BRU, [
-    //   //       [POSITION_ANGLE_FUR, [LAYER_U, LAYER_R_REVER]],
-    //   //       [POSITION_ANGLE_BUL, [LAYER_B, LAYER_U_REVER]],
-    //   //       [POSITION_ANGLE_BDR, [LAYER_R, LAYER_B_REVER]],
-    //   //     ])
-    //   //   ),
-    //   //   new Block(
-    //   //     blockBDR,
-    //   //     new BlockPosition(POSITION_ANGLE_BDR, [
-    //   //       [POSITION_ANGLE_FRD, [LAYER_R, LAYER_D_REVER]],
-    //   //       [POSITION_ANGLE_BRU, [LAYER_B, LAYER_R_REVER]],
-    //   //       [POSITION_ANGLE_BLD, [LAYER_D, LAYER_B_REVER]],
-    //   //     ])
-    //   //   ),
-    //   //   new Block(
-    //   //     blockBLD,
-    //   //     new BlockPosition(POSITION_ANGLE_BLD, [
-    //   //       [POSITION_ANGLE_FDL, [LAYER_D, LAYER_L_REVER]],
-    //   //       [POSITION_ANGLE_BUL, [LAYER_L, LAYER_B_REVER]],
-    //   //       [POSITION_ANGLE_BDR, [LAYER_B, LAYER_D_REVER]],
-    //   //     ])
-    //   //   ),
-    // ];
-    //#endregion
-    // this.blockList = createBlock()
-    this.blockList = createAllBlocks(BLOCKS_PARAMS);
-    //#endregion
+  initCubic(cubicClassName, blockClassName) {
+    this.element = document.querySelector(cubicClassName);
+    this.blockList = createAllBlocks(BLOCKS_PARAMS, blockClassName);
   }
 
   resetCubic() {

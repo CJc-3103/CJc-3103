@@ -1,6 +1,6 @@
-import { ROTATE_DIRECTION_2_TRANSFORM } from '../modules/index.js';
-// import { ROTATE_DIRECTION_2_TRANSFORM } from '../modules/setupCubic.js';
+import { ROTATE_DIRECTION_2_TRANSFORM } from '../setup/index.js';
 import { setTransition } from '../../utils.js';
+
 export default class Block {
   //#region 属性
   _position = null; // 块的相对位置；可以随视角转动和旋转某一层而改变；其内部有一个用三个层名表示的数组

@@ -1,55 +1,65 @@
 import { filterObj } from '../../utils.js';
-// 增加魔方阶数时，需要修改以下属性（增加元素）：
-//   1. 魔方的阶数：LayerCount
-//   2. 魔方的层：
-//   3.
+import { calLayerFromDirection } from '../utils/index.js';
+/* 
+  增加魔方阶数时，需要修改以下属性（增加元素）：
+  1. 魔方的阶数：LayerCount
+  2. 魔方的层：
+  3.
+*/
 
-//#region 常量配置项
-const LayerCount = 2, // 魔方阶数
-  AxisKeyPrefix = 'AXIS_', // 轴对象 key 的前缀
+//#region 构建函数相关的配置项
+const AxisKeyPrefix = 'AXIS_', // 轴对象 key 的前缀
   LayerKeyPrefix = 'LAYER_', // 层对象 key 的前缀
   BlockPositionKeyPrefix = 'BLOCK_', // 位置对象 key 的前缀
-  SurfixRever = '_REVER', // 旋转方向对象中逆时针属性 key 的后缀
+  SurfixReverKey = '_REVER', // 旋转方向对象中逆时针属性 key 的后缀
   SurfixReverVal = `'`; // 旋转方向对象中逆时针属性值的后缀
-// 魔方的轴的别名，同时也绕轴顺时针旋转的别名
-export const AXES = {
-  AXIS_X: 'X',
-  AXIS_Y: 'Y',
-  AXIS_Z: 'Z',
-};
-// 层的别名，同时也是层顺时针旋转的别名
-const LAYERS_ALIAS = {
-  LAYER_X_1: `L'`, // 注意这里是定义了 X1 层为 L' ，因为 L' 相当于 X 轴的顺时针旋转
-  LAYER_X_2: 'R',
-  LAYER_Y_1: `D'`,
-  LAYER_Y_2: 'U',
-  LAYER_Z_1: `B'`,
-  LAYER_Z_2: 'F',
-};
+const TransformFunc = 'rotate', // 3D 转换方法
+  RotateDeg = '90deg'; // 限制每次 3D 旋转的角度为 90° 的倍数
 //#endregion
 
-//#region 构建函数以及构建结果常量
-// 构建旋转方向对象的 key；使用函数表达式避免声明提升导致获取不到 SurfixRever 的值
-const setupDirectionKey = (prefix, directionName, isClockwise) =>
-  `${prefix}${directionName}${isClockwise ? '' : SurfixRever}`;
+//#region 通用辅助函数
 
-//#region 魔方的轴；轴只需要编码顺时针旋转方向的别名
-// 参数示例：('X', true)；返回值示例：'AXIS_X'，'AXIS_X_REVER'
-// 使用函数表达式避免声明提升导致获取不到 AxisKeyPrefix 的值
+// 根据轴对象的 key 返回轴名称
+const calAxisFromAxisKey = (axisKey) => axisKey.split('_')[1];
+// 检查 key 是否代表顺时针方向
+const isDirectionClockwise = (directionKey) =>
+  directionKey.indexOf(SurfixReverKey) === -1;
+
+//#endregion
+
+//#region 构建函数
+
+//#region 构建各类对象的完整 key
+// 构建旋转方向对象的 key；使用函数表达式避免声明提升导致获取不到 SurfixReverKey 的值
+const setupDirectionKey = (prefix, directionName, isClockwise) =>
+  `${prefix}${directionName}${isClockwise ? '' : SurfixReverKey}`;
+
+/* 
+ 魔方的轴；轴只需要编码顺时针旋转方向的别名
+ 参数示例：('X', true)；返回值示例：'AXIS_X'，'AXIS_X_REVER'
+ 使用函数表达式避免声明提升导致获取不到 AxisKeyPrefix 的值
+*/
 const setupAxisKey = (axisName, isClockwise) =>
   setupDirectionKey(AxisKeyPrefix, axisName, isClockwise);
-// const setupAxisKey = (axisName, isClockwise) =>
-//   `AXIS_${axisName}${isClockwise ? '' : SurfixRever}`;
-const calAxisFromAxisKey = (axisKey) => axisKey.split('_')[1];
+
+// 使用函数表达式避免声明提升导致获取不到 LayerKeyPrefix 的值
+const setupLayerKey = (axisName, axisVal, isClockwise) =>
+  setupDirectionKey(LayerKeyPrefix, `${axisName}_${axisVal}`, isClockwise);
+
+// 参数可以是一个数组，也可以是三个坐标的序列
+const setupBlockPositionKey = (i, j, k) => {
+  if (i instanceof Array) {
+    [i, j, k] = i;
+  }
+  return `${BlockPositionKeyPrefix}X_${i}_Y_${j}_Z_${k}`;
+};
+
 //#endregion
 
 //#region 按照轴的正向顺序，依次对层重新编码；
 //   属性的值相当于别名，别名可以替换为更加符合魔方公式的编码，而此处的属性名是更方便代码编写的编码
 //   编码规则说明：沿 X 轴正向，二阶魔方只有两层，分别是 L/R，L 是 X1 层，R 就是 X2 层，同时将各自对应的旋转方向转换成轴向
-// 使用函数表达式避免声明提升导致获取不到 LayerKeyPrefix 的值
-const setupLayerKey = (axisName, axisVal, isClockwise) =>
-  setupDirectionKey(LayerKeyPrefix, `${axisName}_${axisVal}`, isClockwise);
-function setupLayers(axisNames, layerCount, layersAlias) {
+export function setupLayers(axisNames, layerCount, layersAlias) {
   let layers = {};
   axisNames.forEach((axisName) => {
     for (let i = 1; i < layerCount + 1; i++) {
@@ -59,71 +69,48 @@ function setupLayers(axisNames, layerCount, layersAlias) {
   });
   return layers;
 }
-export const LAYERS = setupLayers(
-  Object.values(AXES),
-  LayerCount,
-  LAYERS_ALIAS
-);
 //#endregion
 
 //#region 生成上述层对象和轴对象中旋转方向的反方向
-// 参数是顺时针方向的轴或层对象，
-const isDirectionClockwise = (direction) =>
-  direction.indexOf(SurfixRever) === -1;
-function setupReverseDirections(
-  clockwiseDirection,
-  surfixReverKey,
-  surfixReverVal
-) {
-  let reverseRotate = [];
-  for (const [k, v] of Object.entries(clockwiseDirection)) {
-    let endOfSurfixKey = k.indexOf(surfixReverKey),
-      endOfSufixVal = v.indexOf(surfixReverVal);
-    // 这部分功能与 setupDirectionKey 稍微有点重复，但是有差别：
-    //   这里再次实现可以避免截取前缀，然后重新生成完整的 key，
-    //   只要直接将后缀反转即可，且原方法并无截去后缀的功能，还是得扩展，不如直接这样实现
-    let newKey =
-        endOfSurfixKey > -1
-          ? k.substring(0, endOfSurfixKey)
-          : `${k}${surfixReverKey}`,
-      newVal =
-        endOfSufixVal > -1
-          ? v.substring(0, endOfSufixVal)
-          : `${v}${surfixReverVal}`;
-    reverseRotate[newKey] = newVal;
-  }
-  return reverseRotate;
-}
+// 参数是顺时针方向的轴或层对象
 // 以轴向旋转方向为例：
 //   {
 //     AXIS_X_REVER: `X'`,
 //     AXIS_Y_REVER: `Y'`,
 //     AXIS_Z_REVER: `Z'`,
 //   }
-export const AXES_REVER = setupReverseDirections(
-  AXES,
-  SurfixRever,
-  SurfixReverVal
-);
-export const LAYERS_REVER = setupReverseDirections(
-  LAYERS,
-  SurfixRever,
-  SurfixReverVal
-);
-//#endregion
-
-//#region 包含了所有轴与层旋转方向的常量，用于给魔方类验证：旋转方向指令提供的参数是否合法
-export const AXES_DIRECTIONS = Object.assign({}, AXES, AXES_REVER);
-export const LAYERS_DIRECTIONS = Object.assign({}, LAYERS, LAYERS_REVER);
-export const ROTATE_DIRECTIONS = Object.assign(
-  {},
-  AXES_DIRECTIONS,
-  LAYERS_DIRECTIONS
-);
+// 对外接口，不包含额外参数
+export const setupReverseDirections = (directions) =>
+  setupReverseDirectionsWithSurfix(directions, SurfixReverKey, SurfixReverVal);
+// 内部函数，需要额外的参数
+function setupReverseDirectionsWithSurfix(
+  directions,
+  surfixReverKey,
+  surfixReverVal
+) {
+  let reverseRotate = [];
+  for (const [k, v] of Object.entries(directions)) {
+    const endOfSurfixKey = k.indexOf(surfixReverKey),
+      endOfSufixVal = v.indexOf(surfixReverVal);
+    // 这部分功能与 setupDirectionKey 稍微有点重复，但是有差别：
+    //   这里再次实现可以避免截取前缀，然后重新生成完整的 key，
+    //   只要直接将后缀反转即可，且原方法并无截去后缀的功能，还是得扩展，不如直接这样实现
+    const newKey =
+      endOfSurfixKey > -1
+        ? k.substring(0, endOfSurfixKey)
+        : `${k}${surfixReverKey}`;
+    const newVal =
+      endOfSufixVal > -1
+        ? v.substring(0, endOfSufixVal)
+        : `${v}${surfixReverVal}`;
+    reverseRotate[newKey] = newVal;
+  }
+  return reverseRotate;
+}
 //#endregion
 
 //#region 构建轴旋转方向与层旋转方向的一对多(数组表示)映射；layerCount 表示魔方阶数
-function setupAxis2Layer(axisDirections, layerCount) {
+export function setupAxisToLayer(axisDirections, layerCount) {
   let map = new Map();
   // 遍历轴的旋转方向
   Object.entries(axisDirections).forEach(([axisDirectionKey]) => {
@@ -147,10 +134,6 @@ function setupAxis2Layer(axisDirections, layerCount) {
   });
   return map;
 }
-export const AXES_TO_LAYERS = setupAxis2Layer(
-  Object.assign({}, AXES, AXES_REVER),
-  LayerCount
-);
 // 以二阶魔方为例：
 // export const AXES_TO_LAYERS = new Map([
 //   ['AXIS_X', [LAYER_X_1, LAYER_X_2]],
@@ -163,14 +146,17 @@ export const AXES_TO_LAYERS = setupAxis2Layer(
 //#endregion
 
 //#region 块的位置所处的层，下划线后面的字母表示的就是各个层的简写；每个块通过三条轴上的层序号实现定位
-// 参数可以是一个数组，也可以是三个坐标的序列
-const setupBlockPositionKey = (i, j, k) => {
-  if (i instanceof Array) {
-    [i, j, k] = i;
-  }
-  return `${BlockPositionKeyPrefix}X_${i}_Y_${j}_Z_${k}`;
-};
-function setupBlockPosition(layerCount, layers) {
+/* 以二阶魔方为例：
+ export const BLOCK_POSITIONS = {
+   BLOCK_X_1_Y_1_Z_1: [LAYER_X_1,LAYER_Y_1,LAYER_Z_1]
+   ... 以下省略
+   }
+
+ 根据以上规则，二阶魔方的编码如下：
+   正面四个从左下角开始顺时针依次为：112,122,222,212
+   背面四个从左下角开始顺时针依次为：111,121,221,211
+*/
+export function setupBlockPosition(layerCount, layers) {
   let blockPositions = {};
   // 三层循环，每条轴上每次取一层
   layerCount += 1;
@@ -187,24 +173,29 @@ function setupBlockPosition(layerCount, layers) {
   }
   return blockPositions;
 }
-export const BLOCK_POSITIONS = setupBlockPosition(LayerCount, LAYERS);
-// 根据以上规则，二阶魔方的编码如下：
-//   正面四个从左下角开始顺时针依次为：112,122,222,212
-//   背面四个从左下角开始顺时针依次为：111,121,221,211
-
-// 以二阶魔方为例：
-// export const BLOCK_POSITIONS = {
-//   BLOCK_X_1_Y_1_Z_1: [LAYER_X_1,LAYER_Y_1,LAYER_Z_1]
-//   ... 以下省略
-// }
 
 //#endregion
 
-//#region 旋转方向与 3D 变换的旋转函数和参数的映射关系
+//#region 构建旋转方向与 3D 变换的旋转函数和参数的映射关系
 // 注意魔方 Y 轴与 3D 变换的 Y 轴正向相反；因此这里不采用函数的自动化构建
-const transformFunc = 'rotate',
-  rotateDeg = '90deg';
-function setupDirectionTransform(axisDirections, transformFunc, rotateDeg) {
+
+/* 示例：
+ ROTATE_DIRECTION_2_TRANSFORM = {
+   AXIS_X: `${transformFunc}X(${rotateDeg})`,
+   AXIS_Y: `${transformFunc}Y(-${rotateDeg})`,
+   AXIS_Z: `${transformFunc}Z(${rotateDeg})`,
+   AXIS_X_REVER: `${transformFunc}X(-${rotateDeg})`,
+   AXIS_Y_REVER: `${transformFunc}Y(${rotateDeg})`,
+   AXIS_Z_REVER: `${transformFunc}Z(-${rotateDeg})`,
+   };
+ */
+export const setupDirectionToTransform = (axisDirections) =>
+  setupDirectionToTransformWithParams(axisDirections, TransformFunc, RotateDeg);
+function setupDirectionToTransformWithParams(
+  axisDirections,
+  transformFunc,
+  rotateDeg
+) {
   let directionTransform = {};
   for (const direction in axisDirections) {
     // 判断当前是顺时针还是逆时针
@@ -217,20 +208,6 @@ function setupDirectionTransform(axisDirections, transformFunc, rotateDeg) {
   }
   return directionTransform;
 }
-export const ROTATE_DIRECTION_2_TRANSFORM = setupDirectionTransform(
-  AXES_DIRECTIONS,
-  transformFunc,
-  rotateDeg
-);
-// 示例：
-// ROTATE_DIRECTION_2_TRANSFORM = {
-//   AXIS_X: `${transformFunc}X(${rotateDeg})`,
-//   AXIS_Y: `${transformFunc}Y(-${rotateDeg})`,
-//   AXIS_Z: `${transformFunc}Z(${rotateDeg})`,
-//   AXIS_X_REVER: `${transformFunc}X(-${rotateDeg})`,
-//   AXIS_Y_REVER: `${transformFunc}Y(${rotateDeg})`,
-//   AXIS_Z_REVER: `${transformFunc}Z(-${rotateDeg})`,
-// };
 //#endregion
 
 //#region 生成块需要的参数如下：
@@ -506,7 +483,7 @@ function calcRotateDirections(
 //   },
 //   );
 //#endregion
-function setupBlocksParams(blockPositions, layerCount) {
+export function setupBlocksParams(blockPositions, layerCount) {
   let blocksParams = {};
 
   for (const [currentPositionKey, currentPositionLayers] of Object.entries(
@@ -546,159 +523,6 @@ function setupBlocksParams(blockPositions, layerCount) {
     console.error('some error here');
   }
 }
-// export const BLOCK_PARAMS_LIST = setupBlocksParams(
-export const BLOCKS_PARAMS = setupBlocksParams(BLOCK_POSITIONS, LayerCount);
 //#endregion
 
-//#region 旋转的是层时，根据旋转方向返回对应的层：若旋转方向为逆时针，则去掉'，仅保留层名
-export function calLayerFromDirection(rotateDirection) {
-  if (typeof rotateDirection === 'string') {
-    const endIdx = rotateDirection.indexOf(`'`);
-    return endIdx > -1 ? rotateDirection.substring(0, endIdx) : rotateDirection;
-  }
-}
-//#endregion
-
-//#endregion
-
-//#region
-// export const BLOCK_PARAMS = {
-//   BLOCK_FLU: {
-//     position: BLOCK_POSITION.ANGLE_F_L_U,
-//     rotatablePosition: [
-//       [BLOCK_POSITION.ANGLE_F_U_R, [AXES_Z, AXES_Y_REVER]],
-//       [BLOCK_POSITION.ANGLE_F_D_L, [AXES_X_REVER, AXES_Z_REVER]],
-//       [BLOCK_POSITION.ANGLE_B_U_L, [AXES_Y, AXES_X]],
-//     ],
-//   },
-//   BLOCK_FUR: {
-//     position: BLOCK_POSITION.ANGLE_F_U_R,
-//     rotatablePosition: [
-//       [BLOCK_POSITION.ANGLE_F_L_U, [AXES_Y, AXES_Z_REVER]],
-//       [BLOCK_POSITION.ANGLE_F_R_D, [AXES_Z, AXES_X_REVER]],
-//       [BLOCK_POSITION.ANGLE_B_R_U, [AXES_X, AXES_Y_REVER]],
-//     ],
-//   },
-//   BLOCK_FRD: {
-//     position: BLOCK_POSITION.ANGLE_F_R_D,
-//     rotatablePosition: [
-//       [BLOCK_POSITION.ANGLE_F_U_R, [AXES_X, AXES_Z_REVER]],
-//       [BLOCK_POSITION.ANGLE_F_D_L, [AXES_Z, AXES_Y]],
-//       [BLOCK_POSITION.ANGLE_B_D_R, [AXES_Y_REVER, AXES_X_REVER]],
-//     ],
-//   },
-//   BLOCK_FDL: {
-//     position: BLOCK_POSITION.ANGLE_F_D_L,
-//     rotatablePosition: [
-//       [BLOCK_POSITION.ANGLE_F_L_U, [AXES_Z, AXES_X]],
-//       [BLOCK_POSITION.ANGLE_F_R_D, [AXES_Y_REVER, AXES_Z_REVER]],
-//       [BLOCK_POSITION.ANGLE_B_L_D, [AXES_X_REVER, AXES_Y]],
-//     ],
-//   },
-//   BLOCK_BUL: {
-//     position: BLOCK_POSITION.ANGLE_B_U_L,
-//     rotatablePosition: [
-//       [BLOCK_POSITION.ANGLE_F_L_U, [AXES_X_REVER, AXES_Y_REVER]],
-//       [BLOCK_POSITION.ANGLE_B_R_U, [AXES_Y, AXES_Z]],
-//       [BLOCK_POSITION.ANGLE_B_L_D, [AXES_Z_REVER, AXES_X]],
-//     ],
-//   },
-//   BLOCK_BRU: {
-//     position: BLOCK_POSITION.ANGLE_B_R_U,
-//     rotatablePosition: [
-//       [BLOCK_POSITION.ANGLE_F_U_R, [AXES_Y, AXES_X_REVER]],
-//       [BLOCK_POSITION.ANGLE_B_U_L, [AXES_Z_REVER, AXES_Y_REVER]],
-//       [BLOCK_POSITION.ANGLE_B_D_R, [AXES_X, AXES_Z]],
-//     ],
-//   },
-//   BLOCK_BDR: {
-//     position: BLOCK_POSITION.ANGLE_B_D_R,
-//     rotatablePosition: [
-//       [BLOCK_POSITION.ANGLE_F_R_D, [AXES_X, AXES_Y]],
-//       [BLOCK_POSITION.ANGLE_B_R_U, [AXES_Z_REVER, AXES_X_REVER]],
-//       [BLOCK_POSITION.ANGLE_B_L_D, [AXES_Y_REVER, AXES_Z]],
-//     ],
-//   },
-//   BLOCK_BLD: {
-//     position: BLOCK_POSITION.ANGLE_B_L_D,
-//     rotatablePosition: [
-//       [BLOCK_POSITION.ANGLE_F_D_L, [AXES_Y_REVER, AXES_X]],
-//       [BLOCK_POSITION.ANGLE_B_U_L, [AXES_X_REVER, AXES_Z]],
-//       [BLOCK_POSITION.ANGLE_B_D_R, [AXES_Z_REVER, AXES_Y]],
-//     ],
-//   },
-// };
-// export const BLOCK_PARAMS = {
-//   BLOCK_FLU: {
-//     position: BLOCK_POSITION.ANGLE_F_L_U,
-//     rotatablePosition: [
-//       [BLOCK_POSITION.ANGLE_F_U_R, [LAYER_F, LAYER_U_REVER]],
-//       [BLOCK_POSITION.ANGLE_F_D_L, [LAYER_L, LAYER_F_REVER]],
-//       [BLOCK_POSITION.ANGLE_B_U_L, [LAYER_U, LAYER_L_REVER]],
-//     ],
-//   },
-//   BLOCK_FUR: {
-//     position: BLOCK_POSITION.ANGLE_F_U_R,
-//     rotatablePosition: [
-//       [BLOCK_POSITION.ANGLE_F_L_U, [LAYER_U, LAYER_F_REVER]],
-//       [BLOCK_POSITION.ANGLE_F_R_D, [LAYER_F, LAYER_R_REVER]],
-//       [BLOCK_POSITION.ANGLE_B_R_U, [LAYER_R, LAYER_U_REVER]],
-//     ],
-//   },
-//   BLOCK_FRD: {
-//     position: BLOCK_POSITION.ANGLE_F_R_D,
-//     rotatablePosition: [
-//       [BLOCK_POSITION.ANGLE_F_U_R, [LAYER_R, LAYER_F_REVER]],
-//       [BLOCK_POSITION.ANGLE_F_D_L, [LAYER_F, LAYER_D_REVER]],
-//       [BLOCK_POSITION.ANGLE_B_D_R, [LAYER_D, LAYER_R_REVER]],
-//     ],
-//   },
-//   BLOCK_FDL: {
-//     position: BLOCK_POSITION.ANGLE_F_D_L,
-//     rotatablePosition: [
-//       [BLOCK_POSITION.ANGLE_F_L_U, [LAYER_F, LAYER_L_REVER]],
-//       [BLOCK_POSITION.ANGLE_F_R_D, [LAYER_D, LAYER_F_REVER]],
-//       [BLOCK_POSITION.ANGLE_B_L_D, [LAYER_L, LAYER_D_REVER]],
-//     ],
-//   },
-//   BLOCK_BUL: {
-//     position: BLOCK_POSITION.ANGLE_B_U_L,
-//     rotatablePosition: [
-//       [BLOCK_POSITION.ANGLE_F_L_U, [LAYER_L, LAYER_U_REVER]],
-//       [BLOCK_POSITION.ANGLE_B_R_U, [LAYER_U, LAYER_B_REVER]],
-//       [BLOCK_POSITION.ANGLE_B_L_D, [LAYER_B, LAYER_L_REVER]],
-//     ],
-//   },
-//   BLOCK_BRU: {
-//     position: BLOCK_POSITION.ANGLE_B_R_U,
-//     rotatablePosition: [
-//       [BLOCK_POSITION.ANGLE_F_U_R, [LAYER_U, LAYER_R_REVER]],
-//       [BLOCK_POSITION.ANGLE_B_U_L, [LAYER_B, LAYER_U_REVER]],
-//       [BLOCK_POSITION.ANGLE_B_D_R, [LAYER_R, LAYER_B_REVER]],
-//     ],
-//   },
-//   BLOCK_BDR: {
-//     position: BLOCK_POSITION.ANGLE_B_D_R,
-//     rotatablePosition: [
-//       [BLOCK_POSITION.ANGLE_F_R_D, [LAYER_R, LAYER_D_REVER]],
-//       [BLOCK_POSITION.ANGLE_B_R_U, [LAYER_B, LAYER_R_REVER]],
-//       [BLOCK_POSITION.ANGLE_B_L_D, [LAYER_D, LAYER_B_REVER]],
-//     ],
-//   },
-//   BLOCK_BLD: {
-//     position: BLOCK_POSITION.ANGLE_B_L_D,
-//     rotatablePosition: [
-//       [BLOCK_POSITION.ANGLE_F_D_L, [LAYER_D, LAYER_L_REVER]],
-//       [BLOCK_POSITION.ANGLE_B_U_L, [LAYER_L, LAYER_B_REVER]],
-//       [BLOCK_POSITION.ANGLE_B_D_R, [LAYER_B, LAYER_D_REVER]],
-//     ],
-//   },
-// };
-
-// // 块旋转后，需要同步替换当前位置为新位置，因此需要重新 new 一个位置对象
-// export function getBlockPramsByPosition() {
-//   let blockParams = null;
-
-//   return blockParams;
-// }
 //#endregion

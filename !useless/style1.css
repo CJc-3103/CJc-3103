@@ -1,0 +1,167 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
+.stage {
+    transform-style: preserve-3d;
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+.cubic {
+    position: relative;
+    transform-style: preserve-3d;
+    transform: perspective(500px) rotate3d(-1, 1, 0, 45deg);
+    width: 200px;
+    height: 200px;
+    margin: auto;
+}
+
+/* 魔方的块 */
+.block {
+    width: 50%;
+    height: 50%;
+    box-sizing: border-box;
+    position: absolute;
+    transform-style: preserve-3d;
+}
+
+/* 面 */
+.block .surface {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    border-radius: 10px;
+    border: 2px solid black;
+    backface-visibility: hidden;
+}
+
+/* 面上的颜色；通过绝对位置直接添加到对应的面div上，相当于贴纸 */
+.block .surface.white {
+    background-color: white;
+}
+
+.block .surface.orange {
+    background-color: orange;
+}
+
+.block .surface.green {
+    background-color: green;
+}
+
+.block .surface.red {
+    background-color: red;
+}
+
+.block .surface.blue {
+    background-color: blue;
+}
+
+.block .surface.yellow {
+    background-color: yellow;
+}
+
+.block .inner {
+    background-color: black;
+}
+
+/* 块的位置，3D 变换；初始状态下的绝对位置 */
+.block.block_angle--ful {
+    transform: translate(-50%, -50%);
+}
+
+.block.block_angle--fur {
+    transform: translate(50%, -50%);
+}
+
+.block.block_angle--fdr {
+    transform: translate(50%, 50%);
+}
+
+.block.block_angle--fdl {
+    transform: translate(-50%, 50%);
+}
+
+.block.block_angle--bul {
+    transform: translate3d(-50%, -50%, -100px);
+}
+
+.block.block_angle--bur {
+    transform: translate3d(50%, -50%, -100px);
+}
+
+.block.block_angle--bdr {
+    transform: translate3d(50%, 50%, -100px);
+}
+
+.block.block_angle--bdl {
+    transform: translate3d(-50%, 50%, -100px);
+}
+
+/* 面的位置，3D 变换 */
+/* F；在投影面上，无需变换 */
+
+/* U */
+.block .surface:nth-child(2) {
+    transform: translate3d(0, -50px, -50px) rotateX(90deg);
+}
+
+/* R */
+.block .surface:nth-child(3) {
+    transform: translate3d(50px, 0, -50px) rotateY(90deg);
+}
+
+/* D */
+.block .surface:nth-child(4) {
+    transform: translate3d(0, 50px, -50px) rotateX(-90deg);
+}
+
+/* L */
+.block .surface:nth-child(5) {
+    transform: translate3d(-50px, 0, -50px) rotateY(-90deg);
+}
+
+/* B */
+.block .surface:nth-child(6) {
+    transform: translateZ(-100px) rotateX(180deg);
+}
+
+/* 按钮组 */
+.rotate-type-group {
+    width: 150px;
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+}
+
+.rotate-type-group .rotate-surface {
+    margin-top: 20px;
+}
+
+.rotate-type-group .rotate-surface::after {
+    content: '';
+    display: block;
+    clear: both;
+}
+
+.rotate-type-group .rotate-surface .rotate-direction {
+    float: left;
+    width: 50px;
+    margin-left: 10px;
+    border: 1px solid #409eff;
+    background-color: #409eff;
+    color: white;
+    border-radius: 5px;
+}
+
+.rotate-type-group .rotate-surface .rotate-direction:hover {
+    background-color: #66B1FF;
+}

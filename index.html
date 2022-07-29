@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./style/style.css">
+    <title>Document</title>
+</head>
+
+<body>
+    <!-- 二阶魔方没有棱块(edge)，只有角块(angle) -->
+    <div class="stage">
+        <!-- 所有块在3d变换前，都在正面的左上角位置，然后按顺时针方向设置第二和第三个面的颜色，其他三个面都是inner类的颜色 -->
+        <!-- 也就是 block 元素里的 face 元素只有前三个指定了颜色，后三个都是 inner 类的颜色（默认为黑色） -->
+        <!-- 如需修改各个面的颜色，只需要修改对应面的 color 属性，不需要改 html 结构 -->
+        <div class="cubic">
+            <div class="block block_angle--BLOCK_X_1_Y_2_Z_2">
+                <div class="face front"></div>
+                <div class="face left"></div>
+                <div class="face up"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+            </div>
+            <div class="block block_angle--BLOCK_X_2_Y_2_Z_2">
+                <div class="face front"></div>
+                <div class="face up"></div>
+                <div class="face right"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+            </div>
+            <div class="block block_angle--BLOCK_X_2_Y_1_Z_2">
+                <div class="face front"></div>
+                <div class="face right"></div>
+                <div class="face down"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+            </div>
+            <div class="block block_angle--BLOCK_X_1_Y_1_Z_2">
+                <div class="face front"></div>
+                <div class="face down"></div>
+                <div class="face left"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+            </div>
+            <div class="block block_angle--BLOCK_X_1_Y_2_Z_1">
+                <div class="face up"></div>
+                <div class="face left"></div>
+                <div class="face back"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+            </div>
+            <div class="block block_angle--BLOCK_X_2_Y_2_Z_1">
+                <div class="face back"></div>
+                <div class="face right"></div>
+                <div class="face up"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+            </div>
+            <div class="block block_angle--BLOCK_X_2_Y_1_Z_1">
+                <div class="face down"></div>
+                <div class="face right"></div>
+                <div class="face back"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+            </div>
+            <div class="block block_angle--BLOCK_X_1_Y_1_Z_1">
+                <div class="face back"></div>
+                <div class="face left"></div>
+                <div class="face down"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+            </div>
+        </div>
+        <div class="action-group-container">
+            <!-- 魔方整体转动：X/X'，Y,Y'，Z/Z'，注意这里是数学坐标系，而非 css 的 3D 坐标系 -->
+            <!-- X轴和Z轴正向与 CSS 3D 坐标正向相同，但Y轴正向是向上 -->
+            <!-- 也就是 X 相当于对所有层做 R，Y 相当于对所有层做 U，Z 相当于对所有层做 F -->
+            <div class="action-group cubic-action-group">
+                <p>按下按钮，魔方会自动旋转对应的轴</p>
+                <div class="rotate-group rotate-cubic-group ">
+                    <button class="rotate-direction">X</button>
+                    <button class="rotate-direction">X'</button>
+
+                    <button class="rotate-direction">Y</button>
+                    <button class="rotate-direction">Y'</button>
+
+                    <button class="rotate-direction">Z</button>
+                    <button class="rotate-direction">Z'</button>
+                </div>
+            </div>
+
+            <!-- 二级魔方的层可转动方向：U/U'，R/R'，D/D'，L/L'，F/F'，B/B' -->
+            <div class="action-group layer-action-group">
+                <p>按下按钮，魔方会自动旋转对应的层</p>
+                <div class="rotate-group rotate-layer-group grail container">
+                    <div class="middle">
+                        <div class="main-group">
+                            <button class="rotate-direction">U</button>
+                            <button class="rotate-direction">U'</button>
+
+                            <button class="rotate-direction">F</button>
+                            <button class="rotate-direction">F'</button>
+
+                            <button class="rotate-direction">B</button>
+                            <button class="rotate-direction">B'</button>
+
+                            <button class="rotate-direction">D</button>
+                            <button class="rotate-direction">D'</button>
+                        </div>
+                    </div>
+                    <div class="left">
+                        <div class="extra-group">
+                            <button class="rotate-direction">L</button>
+                            <button class="rotate-direction">L'</button>
+                        </div>
+                    </div>
+                    <div class="right">
+                        <div class="extra-group">
+                            <button class="rotate-direction">R</button>
+                            <button class="rotate-direction">R'</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- <div class="cubic">
+            <div class="block block_angle--BLOCK_X_1_Y_2_Z_2">
+                <div class="face front"></div>
+                <div class="face left"></div>
+                <div class="face up"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+            </div>
+            <div class="block block_angle--BLOCK_X_2_Y_2_Z_2">
+                <div class="face front"></div>
+                <div class="face up"></div>
+                <div class="face right"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+            </div>
+            <div class="block block_angle--BLOCK_X_2_Y_1_Z_2">
+                <div class="face front"></div>
+                <div class="face right"></div>
+                <div class="face down"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+            </div>
+            <div class="block block_angle--BLOCK_X_1_Y_1_Z_2">
+                <div class="face front"></div>
+                <div class="face down"></div>
+                <div class="face left"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+            </div>
+            <div class="block block_angle--BLOCK_X_1_Y_2_Z_1">
+                <div class="face up"></div>
+                <div class="face left"></div>
+                <div class="face back"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+            </div>
+            <div class="block block_angle--BLOCK_X_2_Y_2_Z_1">
+                <div class="face back"></div>
+                <div class="face right"></div>
+                <div class="face up"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+            </div>
+            <div class="block block_angle--BLOCK_X_2_Y_1_Z_1">
+                <div class="face down"></div>
+                <div class="face right"></div>
+                <div class="face back"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+            </div>
+            <div class="block block_angle--BLOCK_X_1_Y_1_Z_1">
+                <div class="face back"></div>
+                <div class="face left"></div>
+                <div class="face down"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+                <div class="face inner"></div>
+            </div>
+        </div> -->
+
+    </div>
+    </div>
+    <script type="module" src="./js/main.js"></script>
+</body>
+
+</html>

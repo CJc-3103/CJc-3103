@@ -1,0 +1,380 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
+.stage {
+    transform-style: preserve-3d;
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+.cubic {
+    width: 200px;
+    height: 200px;
+    position: relative;
+    /* 配合 stage 元素的 flex 属性，居中显示魔方 */
+    margin: auto;
+    transform-style: preserve-3d;
+    /* 事先倾斜使得正面的左上角块距离人眼最近 */
+    transform: perspective(500px) rotate3d(-1, 1, 0, 45deg);
+}
+
+/* 魔方的块 */
+.block {
+    width: 50%;
+    height: 50%;
+    position: absolute;
+    /* transition: transform 0.5s linear; */
+    transform-style: preserve-3d;
+}
+
+/* 面 */
+.block .face {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    border-radius: 10px;
+    box-sizing: border-box;
+    border: 2px solid black;
+    backface-visibility: hidden;
+}
+
+/* 面上的颜色；可以任意修改面上的颜色而不需要调整html，html会自动对应 */
+.block .face.front {
+    background-color: white;
+}
+
+.block .face.up {
+    background-color: orange;
+}
+
+.block .face.left {
+    background-color: green;
+}
+
+.block .face.down {
+    background-color: red;
+}
+
+.block .face.right {
+    background-color: blue;
+}
+
+.block .face.back {
+    background-color: yellow;
+}
+
+.block .inner {
+    background-color: black;
+}
+
+/* 块的位置，3D 变换；相对位置 */
+/* 
+变换过程：
+1. 初始状态下，由于所有块三个面的朝向相同，需要先通过旋转，将角块各面的朝向摆正；
+2. 将魔方（立方体）的中心点作为原点，所有块需要3d平移三个方向上各50%自身边长的距离；
+X/Y轴使用自身边长作为100%，Z轴由于没有参考来源，因此使用绝对单位
+*/
+.block {
+    /* 调整所有块的中心点为：正面看去的 BDR(背面的右下角) 角块的顶点 */
+    transform-origin: 100% 100% -100px;
+    /* transform-origin: 50% 50% -50px; */
+}
+
+
+/* 老版样式覆盖 */
+.block.block_angle--BLOCK_X_1_Y_2_Z_2 {
+    /* 必须指定 transform 初始值，否则执行 js 时无法执行 3D 变换，因此使用无影响的变换效果 */
+    /* transform: translate(-50%, -50%); */
+}
+
+.block.block_angle--BLOCK_X_2_Y_2_Z_2 {
+    /* F */
+    /* transform: translate(50%, -50%); */
+}
+
+.block.block_angle--BLOCK_X_2_Y_1_Z_2 {
+    /* F*2 或 F'*2 */
+    /* transform: translate(50%, 50%); */
+}
+
+.block.block_angle--BLOCK_X_1_Y_1_Z_2 {
+    /* F' */
+    /* transform: translate(-50%, 50%); */
+}
+
+.block.block_angle--BLOCK_X_1_Y_2_Z_1 {
+    /* L' */
+    /* transform: translate3d(-50%, -50%, -100px); */
+}
+
+.block.block_angle--BLOCK_X_2_Y_2_Z_1 {
+    /* U*2 或 U'2* */
+    /* transform: translate3d(50%, -50%, -100px); */
+}
+
+.block.block_angle--BLOCK_X_2_Y_1_Z_1 {
+    /* U'*2 + R */
+    /* transform: translate3d(50%, 50%, -100px); */
+}
+
+.block.block_angle--BLOCK_X_1_Y_1_Z_1 {
+    /* L*2 或 L'*2 */
+    /* transform: translate3d(-50%, 50%, -100px); */
+}
+
+.block.block_angle--BLOCK_X_1_Y_2_Z_2 {
+    /* 必须指定 transform 初始值，否则执行 js 时无法执行 3D 变换，因此使用无影响的变换效果 */
+    /* transform: rotate(0); */
+    transform: matrix(1, 0, 0, 1, 0, 0);
+}
+
+.block.block_angle--BLOCK_X_2_Y_2_Z_2 {
+    /* F */
+    /* transform: rotateZ(90deg); */
+    transform: matrix(6.12323e-17, 1, -1, 6.12323e-17, 0, 0);
+}
+
+.block.block_angle--BLOCK_X_2_Y_1_Z_2 {
+    /* F*2 或 F'*2 */
+    transform: rotateZ(180deg);
+    transform: matrix(-1, 1.22465e-16, -1.22465e-16, -1, 0, 0);
+}
+
+.block.block_angle--BLOCK_X_1_Y_1_Z_2 {
+    /* F' */
+    transform: rotateZ(-90deg);
+    transform: matrix(6.12323e-17, -1, 1, 6.12323e-17, 0, 0);
+}
+
+.block.block_angle--BLOCK_X_1_Y_2_Z_1 {
+    /* L' */
+    transform: rotateX(90deg);
+    transform: matrix3d(1, 0, 0, 0, 0, 6.12323e-17, 1, 0, 0, -1, 6.12323e-17, 0, 0, 0, 0, 1)
+}
+
+.block.block_angle--BLOCK_X_2_Y_2_Z_1 {
+    /* U*2 或 U'2* */
+    transform: rotateY(180deg);
+    transform: matrix3d(-1, 0, -1.22465e-16, 0, 0, 1, 0, 0, 1.22465e-16, 0, -1, 0, 0, 0, 0, 1);
+}
+
+.block.block_angle--BLOCK_X_2_Y_1_Z_1 {
+    /* U'*2 + R */
+    transform: rotateY(180deg) rotateX(-90deg);
+    transform: matrix3d(-1, 0, -1.22465e-16, 0, -1.22465e-16, 6.12323e-17, 1, 0, 7.4988e-33, 1, -6.12323e-17, 0, 0, 0, 0, 1)
+}
+
+.block.block_angle--BLOCK_X_1_Y_1_Z_1 {
+    /* L*2 或 L'*2 */
+    transform: rotateX(180deg);
+    transform: matrix3d(1, 0, 0, 0, 0, -1, 1.22465e-16, 0, 0, -1.22465e-16, -1, 0, 0, 0, 0, 1)
+}
+
+
+/* .block.block_angle--flu {
+    transform: translate3d(-25%, -25%, 50px);
+}
+
+.block.block_angle--fur {
+    transform: translate3d(25%, -25%, 50px) rotateZ(90deg);
+}
+
+.block.block_angle--frd {
+    transform: translate3d(25%, 25%, 50px) rotateZ(180deg);
+}
+
+.block.block_angle--fdl {
+    transform: translate3d(-25%, 25%, 50px) rotateZ(-90deg);
+}
+
+.block.block_angle--bul {
+    transform: translate3d(-25%, -25%, -50px) rotateY(-180deg) rotateZ(90deg);
+}
+
+.block.block_angle--bru {
+    transform: translate3d(25%, -25%, -50px) rotateY(-180deg);
+}
+
+.block.block_angle--bdr {
+    transform: translate3d(25%, 25%, -50px) rotateY(-180deg) rotateZ(-90deg);
+}
+
+.block.block_angle--bld {
+    transform: translate3d(-25%, 25%, -50px) rotateY(-180deg) rotateZ(180deg);
+    ;
+} */
+
+/* 面的位置，3D 变换 */
+/* F 与投影面平行，无需变换 */
+
+/* L */
+.block .face:nth-child(2) {
+    transform: translate3d(-50px, 0, -50px) rotateY(-90deg);
+}
+
+/* U */
+.block .face:nth-child(3) {
+    transform: translate3d(0, -50px, -50px) rotateX(90deg);
+}
+
+/* R */
+.block .face:nth-child(4) {
+    transform: translate3d(50px, 0, -50px) rotateY(90deg);
+}
+
+/* D */
+.block .face:nth-child(5) {
+    transform: translate3d(0, 50px, -50px) rotateX(-90deg);
+}
+
+/* B */
+.block .face:nth-child(6) {
+    transform: translateZ(-100px) rotateX(180deg);
+}
+
+/* 
+
+功能区 ---
+
+*/
+.action-group-container {
+    z-index: -1;
+}
+
+.cubic-action-group {
+    width: 85px;
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 40px;
+}
+
+.rotate-cubic-group {
+    width: 85;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(4, 35px);
+    gap: 5px 5px;
+}
+
+.layer-action-group {
+    width: 175px;
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 40px;
+}
+
+.action-group p {
+    line-height: 20px;
+    text-align: center;
+    vertical-align: center;
+}
+
+/* 将文字脱离文本流，并向上偏移，使得按钮区域整体在屏幕中垂直居中 */
+.layer-action-group {
+    padding-top: 40px;
+}
+
+.layer-action-group p {
+    position: relative;
+    margin-top: -40px;
+}
+
+.layer-action-group .rotate-layer-group {
+    width: 85px;
+}
+
+.action-group .rotate-group .rotate-direction {
+    width: 40px;
+    height: 35px;
+    border: 1px solid #409eff;
+    background-color: #409eff;
+    color: white;
+    border-radius: 5px;
+}
+
+.action-group .rotate-group .rotate-direction:hover {
+    background-color: #66B1FF;
+}
+
+/* 中间区域采用网格布局，2行*4列 */
+.layer-action-group .rotate-layer-group .main-group {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(4, 35px);
+    gap: 5px 5px;
+}
+
+.layer-action-group .rotate-layer-group .extra-group {
+    width: 40px;
+}
+
+.layer-action-group .rotate-layer-group .extra-group .rotate-direction {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.layer-action-group .rotate-layer-group .extra-group .rotate-direction:last-child {
+    margin-bottom: 0;
+}
+
+/* 三列采用圣杯布局 */
+/* 通用代码 */
+.grail.container::before, .grail.container::after {
+    content: '';
+    display: block;
+    clear: both;
+}
+
+.grail .left,
+.grail .middle,
+.grail .right {
+    float: left;
+    text-align: center;
+}
+
+.grail .middle {
+    width: 100%;
+}
+
+.grail .left,
+.grail .right {
+    position: relative;
+}
+
+/* 与实际布局长度相关的代码 */
+.grail.container {
+    padding: 0 45px 0 45px;
+}
+
+.grail .left {
+    margin-left: -100%;
+    left: -45px;
+}
+
+.grail .right {
+    margin-left: -40px;
+    right: -45px;
+}
+
+/* 左右两侧的按钮区垂直居中 */
+.grail .left,
+.grail .right {
+    display: flex;
+    flex-direction: column;
+    height: 155px;
+}
+
+.grail .left, .grail .right {
+    justify-content: center;
+}
